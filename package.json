@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "FoodLook API for TMI at the Universidad Complutense de Madrid",
   "author": "Dariel de Jesus",
+  "scripts": {
+    "start": "sls wsgi serve"
+  },
   "devDependencies": {
     "serverless-python-requirements": "^5.3.1",
     "serverless-wsgi": "^3.0.0"
