@@ -1,0 +1,7 @@
+webpack.config.js
+.build
+package.json
+package-lock.json
+.prettierrc.js
+tsconfig.json
+.webpack

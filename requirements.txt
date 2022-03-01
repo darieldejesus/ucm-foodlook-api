@@ -1,7 +1,0 @@
-Flask==2
-Flask-Migrate==3
-Flask-SQLAlchemy==2
-SQLAlchemy==1.4
-Werkzeug==2
-python-dotenv
-mysql-connector-python==8

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "preserveConstEnums": true,
+    "lib": ["es2017", "DOM"],
+    "removeComments": true,
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "sourceMap": true,
+    "target": "es5",
+    "outDir": ".build",
+    "inlineSources": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "./",
+    "sourceRoot": "/",
+    "baseUrl": "./",
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@src/*": ["src/*"]
+    }
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["node_modules/**/*", ".serverless/**/*"]
+}
