@@ -18,6 +18,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+      "import/prefer-default-export": 0,
       "no-console": 1,
       "prettier/prettier": [
         "error",

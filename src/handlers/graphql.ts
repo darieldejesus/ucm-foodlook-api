@@ -1,8 +1,8 @@
 import { ApolloServer } from "apollo-server-lambda";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
-import resolvers from "@src/resolvers";
-import typeDefs from "@src/schema";
+import resolvers from "../resolvers";
+import typeDefs from "../schema";
 
 const apolloServer = new ApolloServer({
   resolvers,
@@ -10,5 +10,4 @@ const apolloServer = new ApolloServer({
   plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
 });
 
-const handler = apolloServer.createHandler();
-export default handler;
+export const handler = apolloServer.createHandler();

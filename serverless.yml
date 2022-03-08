@@ -1,6 +1,6 @@
 service: food-look-api
 
-frameworkVersion: ^2.72.0
+frameworkVersion: ^3.6.0
 
 provider:
   name: aws
@@ -10,6 +10,7 @@ provider:
   lambdaHashingVersion: 20201221
 
 plugins:
+  - serverless-dotenv-plugin
   - serverless-webpack
   - serverless-offline
 
@@ -22,7 +23,7 @@ custom:
 
 functions:
   graphql:
-    handler: src/functions/graphql.handler
+    handler: src/handlers/graphql.handler
     role: ServiceRole
     events:
     - http:

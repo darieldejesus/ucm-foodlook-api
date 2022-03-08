@@ -1,6 +1,10 @@
+import PresignedUrl from "./mutations/presignedUrl";
+
 const resolvers = {
   Query: {},
-  Mutation: {},
+  Mutation: {
+    presignedUrl: PresignedUrl,
+  },
 };
 
 export default resolvers;

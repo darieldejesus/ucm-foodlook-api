@@ -1,13 +1,29 @@
 import { gql } from "graphql-tag";
 
 const schema = gql`
-  type Query {}
+  type PresignedUrl {
+    fileName: String!
+    path: String!
+    url: String!
+    expirationDate: Int!
+  }
 
-  type Mutation {}
+  input PresignedUrlInput {
+    fileName: String!
+    size: Int!
+  }
+
+  type Query {
+    presignedUrl: PresignedUrl
+  }
+
+  type Mutation {
+    presignedUrl(input: PresignedUrlInput): PresignedUrl
+  }
 
   schema {
-    query: Query;
-    mutation: Mutation;
+    query: Query
+    mutation: Mutation
   }
 `;
 
