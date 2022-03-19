@@ -1,3 +1,7 @@
+interface ConstructorProps<A> {
+  s3: A;
+}
+
 interface PresignedUrlProps {
   fileName: string;
   bucket: string;

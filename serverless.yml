@@ -2,29 +2,69 @@ service: food-look-api
 
 frameworkVersion: ^3.6.0
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: nodejs14.x
   stage: dev
   region: us-east-1
-  lambdaHashingVersion: 20201221
+  iam:
+    role: DefaultLambdaRole
+  environment:
+    ACCESS_KEY_ID: ${env:ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY_ID: ${env:SECRET_ACCESS_KEY_ID}
+    SECRETS_KEY: ${env:SECRETS_KEY}
 
 plugins:
-  - serverless-dotenv-plugin
   - serverless-webpack
+  - serverless-vpc-plugin
   - serverless-offline
+  - serverless-offline-sns
+  - serverless-prune-plugin
 
 custom:
+  dotenv:
+    include: []
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules: true
+  vpcConfig:
+    cidrBlock: '10.0.0.0/16'
+    createDbSubnet: true
+    createNatInstance: false
+    createParameters: false
+    createNatGateway: true
+    zones:
+      - us-east-1a
+      - us-east-1b
+      - us-east-1c
+    services:
+      - rds
+    subnetGroups:
+      - rds
+  serverless-iam-roles-per-function:
+    defaultInherit: true # Each function will inherit the server level roles too.
+    createStack: false
+  prune:
+    automatic: true
+    number: 3
   serverless-offline:
     port: 4000
+  serverless-offline-sns:
+    port: 4002 # a free port for the sns server to run on
+    debug: false
 
 functions:
+  imageUploaded:
+    handler: src/handlers/ImageUploaded.handler
+    events:
+      - s3:
+          bucket: ${env:S3_BUCKET}
+          event: s3:ObjectCreated:*
+          existing: true
   graphql:
     handler: src/handlers/graphql.handler
-    role: ServiceRole
     events:
     - http:
         path: graphql
@@ -35,3 +75,98 @@ functions:
         method: get
 
 resources:
+  Resources:
+    AppSecurityGroupEgress:
+      Type: AWS::EC2::SecurityGroupEgress
+      Properties:
+        Description: 'Permit MySQL (3306) to !Ref DBSecurityGroup'
+        DestinationSecurityGroupId: !Ref DBSecurityGroup
+        FromPort: 3306
+        GroupId: !GetAtt AppSecurityGroup.GroupId
+        IpProtocol: tcp
+        ToPort: 3306
+
+    DBSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: 'RDS Security Group'
+        SecurityGroupEgress:
+          - Description: 'Deny all outbound'
+            IpProtocol: '-1'
+            CidrIp: '127.0.0.1/32'
+        SecurityGroupIngress:
+          - Description: 'Permit MySQL (3306) from !Ref AppSecurityGroup'
+            FromPort: 3306
+            IpProtocol: tcp
+            SourceSecurityGroupId: !GetAtt AppSecurityGroup.GroupId
+            ToPort: 3306
+        Tags:
+          - Key: Name
+            Value: !Join ['-', [!Ref 'AWS::StackName', rds]]
+        VpcId: !Ref VPC
+
+    RDSInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        MasterUsername: ${env:DB_USERNAME}
+        MasterUserPassword: ${env:DB_PASSWORD}
+        AllocatedStorage: ${env:DB_STORAGE}
+        DBName: ${env:DB_NAME}
+        Port: 3306
+        DBInstanceClass: ${env:DB_TYPE}
+        Engine: mysql
+        EngineVersion: ${env:DB_VERSION}
+        PubliclyAccessible: false
+        DBSubnetGroupName: !Ref RDSSubnetGroup
+        VPCSecurityGroups:
+          - !Ref DBSecurityGroup
+        Tags:
+          - Key: Name
+            Value: !Join ['-', [!Ref 'AWS::StackName', rds]]
+
+    DefaultLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:service}-${self:provider.stage}-${self:provider.region}-DefaultLambdaRole
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:service}-${self:provider.stage}-${self:provider.region}-DefaultLambdaRolePolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - xray:PutTraceSegments
+                    - xray:PutTelemetryRecords
+                    - logs:CreateLogStream
+                    - logs:CreateLogGroup
+                    - logs:PutLogEvents
+                    - rekognition:*
+                  Resource: '*'
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:GetObject
+                  Resource:
+                    !Join
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - !Ref ImagesS3Bucket
+                        - '/*'
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+    ImagesS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ['*']
+              AllowedMethods: [GET, PUT]
+              AllowedOrigins: ['*']
+              Id: CORSRuleId1
+              MaxAge: '3600'

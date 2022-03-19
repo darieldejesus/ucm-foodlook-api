@@ -7,7 +7,8 @@ import slugify from "slugify";
 class FileService {
   #s3: AWS.S3;
 
-  constructor(s3: AWS.S3) {
+  constructor(props: ConstructorProps<AWS.S3>) {
+    const { s3 } = props;
     this.#s3 = s3;
   }
 

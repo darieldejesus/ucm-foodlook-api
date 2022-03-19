@@ -20,11 +20,13 @@ const PresignedUrl = async (_: unknown, params: Params): Promise<Result> => {
     input: { fileName },
   } = params;
   const s3Instance = new AWS.S3();
-  const fileService = new FileService(s3Instance);
+  const fileService = new FileService({ s3: s3Instance });
+
   const presigned = await fileService.presignedUrl({
     fileName,
     bucket: Config.s3.bucket as string,
   });
+
   return {
     fileName: presigned.name,
     expirationDate: 123523,
