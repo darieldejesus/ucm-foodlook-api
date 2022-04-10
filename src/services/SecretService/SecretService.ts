@@ -1,5 +1,6 @@
 import AWS from "aws-sdk";
 import isEmpty from "lodash/isEmpty";
+import dotenv from "dotenv";
 
 class SecretService {
   private static instance = new SecretService();
@@ -14,6 +15,7 @@ class SecretService {
         "Error: Instantiation failed: Use SecretService.getInstance() instead."
       );
     }
+    dotenv.config();
     this.client = new AWS.SecretsManager({ region: "us-east-1" });
   }
 
@@ -21,32 +23,56 @@ class SecretService {
     return SecretService.instance;
   }
 
-  /**
-   * Given a file name, creates a Presigned URL from a S3 Bucket.
-   * @returns Presigned URL
-   */
-  async getSecrets(): Promise<Secret.Secrets | null> {
-    if (!isEmpty(this.secrets)) {
-      return this.secrets;
-    }
+  async getRemoteSecrets(): Promise<Secret.Secrets | null> {
     if (!this.client) {
       return this.secrets;
     }
     if (!process.env.SECRETS_KEY) {
       throw new Error("SECRETS_KEY not defined");
     }
-    const secrets = await this.client
+    const remoteSecrets = await this.client
       .getSecretValue({ SecretId: process.env.SECRETS_KEY })
       .promise();
 
-    if (secrets && !isEmpty(secrets.SecretString)) {
+    let secrets: Secret.Secrets = {};
+    if (remoteSecrets && !isEmpty(remoteSecrets.SecretString)) {
       try {
-        this.secrets = JSON.parse(secrets.SecretString as string);
+        secrets = JSON.parse(remoteSecrets.SecretString as string);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(JSON.stringify(error));
       }
     }
+    return secrets;
+  }
+
+  static getLocalSecrets(): Secret.Secrets | null {
+    const secrets = Object.keys(process.env).reduce((acc, key) => {
+      if (key.includes("FL_")) {
+        return {
+          ...acc,
+          [key]: process.env[key],
+        };
+      }
+      return acc;
+    }, {});
+    return secrets;
+  }
+
+  /**
+   * Loads remote and local environment variables.
+   * @returns Object with the environment variables
+   */
+  async getSecrets(): Promise<Secret.Secrets | null> {
+    if (this.secrets) {
+      return this.secrets;
+    }
+    const remoteSecrets = await this.getRemoteSecrets();
+    const localSecrets = SecretService.getLocalSecrets();
+    this.secrets = {
+      ...remoteSecrets,
+      ...localSecrets,
+    };
     return this.secrets;
   }
 
@@ -54,7 +80,6 @@ class SecretService {
     if (!this.secrets) {
       await this.getSecrets();
     }
-
     if (!this.secrets || !this.secrets[name]) {
       return null;
     }
