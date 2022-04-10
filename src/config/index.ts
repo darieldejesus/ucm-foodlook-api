@@ -1,9 +1,9 @@
 export default {
-  databaseURL: process.env.DATABASE_URI,
+  databaseURL: process.env.FL_DATABASE_URI,
   s3: {
-    bucket: process.env.S3_BUCKET,
-    accessKey: process.env.ACCESS_KEY_ID,
-    secretKey: process.env.SECRET_ACCESS_KEY_ID,
-    region: process.env.REGION,
+    bucket: process.env.FL_S3_BUCKET,
+    accessKey: process.env.FL_ACCESS_KEY_ID,
+    secretKey: process.env.FL_SECRET_ACCESS_KEY_ID,
+    region: process.env.FL_REGION,
   },
 };
