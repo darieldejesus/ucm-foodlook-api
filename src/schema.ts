@@ -8,13 +8,19 @@ const schema = gql`
     expirationDate: Int!
   }
 
+  type Detection {
+    fileName: String!
+    path: String!
+    lines: [String!]!
+  }
+
   input PresignedUrlInput {
     fileName: String!
     size: Int!
   }
 
   type Query {
-    presignedUrl: PresignedUrl
+    detection(fileName: String!): Detection!
   }
 
   type Mutation {

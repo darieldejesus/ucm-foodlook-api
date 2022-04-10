@@ -1,7 +1,10 @@
 import PresignedUrl from "./mutations/presignedUrl";
+import Detection from "./queries/detection";
 
 const resolvers = {
-  Query: {},
+  Query: {
+    detection: Detection,
+  },
   Mutation: {
     presignedUrl: PresignedUrl,
   },
