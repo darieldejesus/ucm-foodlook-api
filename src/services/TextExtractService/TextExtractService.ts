@@ -33,7 +33,7 @@ class TextExtractService {
       return Text;
     });
 
-    return rawLines.filter((s) => s) as string[];
+    return rawLines.filter((s) => (s || "").length > 6) as string[];
   }
 }
 

@@ -46,9 +46,12 @@ class Database {
     return Database.dbInstance;
   }
 
-  public async getKnex(): Promise<Knex | null> {
+  public async getKnex(): Promise<Knex> {
     if (!this.knexInstance) {
       this.knexInstance = await this.initInstance();
+    }
+    if (!this.knexInstance) {
+      throw new Error("Unable to initialize Knex");
     }
     return this.knexInstance;
   }

@@ -1,6 +1,7 @@
 import { ApolloServer } from "apollo-server-lambda";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
+import "../config/database";
 import resolvers from "../resolvers";
 import typeDefs from "../schema";
 

@@ -3,6 +3,9 @@ import AWS from "aws-sdk";
 import format from "date-fns/format";
 import urlJoin from "url-join";
 import slugify from "slugify";
+import { v4 as uuid } from "uuid";
+import DB from "../../config/database";
+import PresignedUrl from "../../models/presignedUrl";
 
 class FileService {
   #s3: AWS.S3;
@@ -23,16 +26,26 @@ class FileService {
     const { name, ext } = path.parse(fileName);
     const normalizedName = `${dateTimeStr}-${slugify(name)}${ext}`;
     const fullFilePath = urlJoin(folderPath, normalizedName);
+
     const url = await this.#s3.getSignedUrlPromise("putObject", {
       Bucket: bucket,
       Key: fullFilePath,
       ContentType: "image/png",
       ACL: "public-read",
     });
-    return {
+
+    const knex = await DB.getInstance().getKnex();
+    const entry = await PresignedUrl.query(knex).insertAndFetch({
+      uuid: uuid(),
       name: normalizedName,
+      path: folderPath,
+      url: fullFilePath,
+    });
+
+    return {
+      name: entry.name,
       extension: ext,
-      path: urlJoin("/", fullFilePath),
+      path: urlJoin("/", entry.url),
       url,
     };
   }

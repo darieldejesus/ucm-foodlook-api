@@ -1,6 +1,6 @@
-import AWS from "aws-sdk";
 import isEmpty from "lodash/isEmpty";
 import dotenv from "dotenv";
+import AWS from "../../config/aws";
 
 class SecretService {
   private static instance = new SecretService();

@@ -32,13 +32,12 @@ custom:
   vpcConfig:
     cidrBlock: '10.0.0.0/16'
     createDbSubnet: true
-    createNatInstance: false
+    createNatInstance: true
     createParameters: false
-    createNatGateway: true
+    createNatGateway: false
     zones:
       - us-east-1a
       - us-east-1b
-      - us-east-1c
     services:
       - rds
     subnetGroups:
@@ -147,7 +146,8 @@ resources:
                     - logs:CreateLogStream
                     - logs:CreateLogGroup
                     - logs:PutLogEvents
-                    - rekognition:*
+                    - textract:*
+                    - secretsmanager:GetSecretValue
                   Resource: '*'
                 - Effect: Allow
                   Action:
