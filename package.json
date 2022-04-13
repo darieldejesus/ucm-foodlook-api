@@ -33,6 +33,7 @@
     "aws-sdk": "^2.1059.0",
     "date-fns": "^2.28.0",
     "dotenv": "^16.0.0",
+    "google-search-results-nodejs": "^2.1.0",
     "graphql": "^16.3.0",
     "graphql-constraint-directive": "^3.0.0",
     "graphql-tag": "^2.12.6",

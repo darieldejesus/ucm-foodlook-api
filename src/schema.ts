@@ -9,9 +9,20 @@ const schema = gql`
   }
 
   type Detection {
+    uuid: String!
+    query: String!
+  }
+
+  type DetectionSet {
     fileName: String!
     path: String!
-    lines: [String!]!
+    lines: [Detection!]!
+  }
+
+  type Image {
+    uuid: String!
+    title: String!
+    url: String!
   }
 
   input PresignedUrlInput {
@@ -20,7 +31,8 @@ const schema = gql`
   }
 
   type Query {
-    detection(fileName: String!): Detection!
+    detection(fileName: String!): DetectionSet!
+    images(detectionUuid: String!): [Image!]!
   }
 
   type Mutation {

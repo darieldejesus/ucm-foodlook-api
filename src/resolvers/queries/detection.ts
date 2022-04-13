@@ -2,10 +2,15 @@ import DB from "../../config/database";
 import File from "../../models/file";
 import Detection from "../../models/detection";
 
+interface DetectionEntry {
+  uuid: string;
+  query: string;
+}
+
 interface Result {
   fileName: string;
   path: string;
-  lines: string[];
+  lines: DetectionEntry[];
 }
 
 interface Params {
@@ -20,7 +25,10 @@ const PresignedUrl = async (_: unknown, params: Params): Promise<Result> => {
     throw new Error("File not found");
   }
   const detections = await Detection.query(knex).where("file_id", fileEntry.id);
-  const lines = detections.map((entry) => entry.status);
+  const lines = detections.map((entry) => ({
+    uuid: entry.uuid,
+    query: entry.status,
+  }));
   return {
     fileName: fileEntry.name,
     path: fileEntry.path,
